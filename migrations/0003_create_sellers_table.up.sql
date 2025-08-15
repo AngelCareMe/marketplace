@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS sellers (
+    user_id TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+    company_name TEXT,
+    rating DOUBLE PRECISION DEFAULT 0.0
+);
