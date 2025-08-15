@@ -13,8 +13,10 @@ import (
 )
 
 const (
-	ContextUserID   = "userID"
-	ContextUserType = "userType"
+	UserTypeSeller   = "seller"
+	UserTypeCustomer = "customer"
+	ContextUserID    = "userID"
+	ContextUserType  = "userType"
 )
 
 func AccessTokenMiddleware(jwtManager jwt.JWTManager, logger *logrus.Logger) gin.HandlerFunc {
@@ -141,6 +143,26 @@ func RefreshTokenMiddleware(jwtManager jwt.JWTManager, logger *logrus.Logger) gi
 
 		c.Set("userID", userID)
 		c.Set("userType", userType)
+		c.Next()
+	}
+}
+
+func RequireRole(requiredRole string, logger *logrus.Logger) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		userType := c.GetString(ContextUserType)
+
+		if userType != requiredRole {
+			logger.WithFields(map[string]interface{}{
+				"user_type": userType,
+				"required":  requiredRole,
+			}).Warn("Role check failed - insufficient permissions")
+
+			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
+				"error": "access denied: insufficient permissions",
+			})
+			return
+		}
+
 		c.Next()
 	}
 }

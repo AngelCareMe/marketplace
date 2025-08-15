@@ -28,7 +28,8 @@ func NewProductUsecase(adapter product.ProductRepository, logger *logrus.Logger,
 	}
 }
 
-func (uc *productUsecase) Create(ctx context.Context, req *dto.CreateProductRequest) (*dto.ProductResponse, error) {
+// TODO: РЕАЛИЗОВАТЬ СОЗДАНИЕ ПРОДУКТА В КАТЕГОРИИ
+func (uc *productUsecase) Create(ctx context.Context, req *dto.CreateProductRequest, categoryID string) (*dto.ProductResponse, error) {
 	if req == nil {
 		uc.logger.WithFields(logrus.Fields{
 			"operation": "create",
@@ -136,7 +137,7 @@ func (uc *productUsecase) GetByTitle(ctx context.Context, title string) (*entity
 	return product, nil
 }
 
-func (uc *productUsecase) Update(ctx context.Context, req *dto.UpdateProductRequest) (*dto.ProductResponse, error) {
+func (uc *productUsecase) Update(ctx context.Context, req *dto.UpdateProductRequest, id string) (*dto.ProductResponse, error) {
 	if req == nil {
 		uc.logger.WithFields(logrus.Fields{
 			"operation": "update",
@@ -162,6 +163,15 @@ func (uc *productUsecase) Update(ctx context.Context, req *dto.UpdateProductRequ
 		}
 		uc.logger.WithFields(logrus.Fields{"error": err}).Warn("Failed validation")
 		return nil, errors.NewAppError("VALIDATE_ERR", "unexpected validation error", err)
+	}
+
+	if _, err := uc.adapter.GetByID(ctx, id); err != nil {
+		uc.logger.WithFields(logrus.Fields{
+			"operation": "update",
+			"id":        id,
+			"error":     err,
+		}).Warn("User not found")
+		return nil, errors.NewAppError("NOT_FOUND", "user not found", err)
 	}
 
 	p := entity.Product{

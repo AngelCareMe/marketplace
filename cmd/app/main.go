@@ -15,14 +15,18 @@ import (
 	"marketplace/internal/adapter/bcrypt"
 	"marketplace/internal/adapter/jwt"
 	"marketplace/internal/adapter/postgres/customer"
+	productAdapter "marketplace/internal/adapter/postgres/product"
 	"marketplace/internal/adapter/postgres/seller"
 	"marketplace/internal/adapter/postgres/token"
 	"marketplace/internal/adapter/postgres/user"
 	"marketplace/internal/handler/auth"
+	"marketplace/internal/handler/product"
 	usecase "marketplace/internal/usecase/auth"
+	usecaseProduct "marketplace/internal/usecase/product"
 	"marketplace/pkg/config"
 	adapter "marketplace/pkg/pgxpool"
 
+	"github.com/go-playground/validator/v10"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 
@@ -70,6 +74,7 @@ func main() {
 	customerRepo := customer.NewCustomerRepository(pool, rawLogger)
 	sellerRepo := seller.NewSellerRepository(pool, rawLogger)
 	tokenRepo := token.NewTokenRepository(pool, rawLogger)
+	productRepo := productAdapter.NewProductRepository(pool, rawLogger)
 
 	// Менеджеры
 	bcryptManager := bcrypt.NewBcryptManager(rawLogger, 12)
@@ -77,9 +82,11 @@ func main() {
 
 	// Usecase
 	authUsecase := usecase.NewAuthUsecase(userRepo, customerRepo, sellerRepo, tokenRepo, jwtManager, bcryptManager, rawLogger)
+	productUsecase := usecaseProduct.NewProductUsecase(productRepo, rawLogger, validator.New())
 
 	// Handler
 	authHandler := auth.NewAuthHandler(authUsecase, rawLogger)
+	productHandler := product.NewProductHandler(productUsecase, rawLogger)
 
 	// Gin router
 	r := gin.New()
@@ -92,6 +99,7 @@ func main() {
 	r.GET("/healthz", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"status": "alive"})
 	})
+	product.RegisterProductRoutes(apiGroup, productHandler, jwtManager, rawLogger)
 	r.POST("/test", func(c *gin.Context) {
 		var data map[string]interface{}
 		c.BindJSON(&data)

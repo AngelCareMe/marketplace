@@ -33,7 +33,7 @@ func (h *AuthHandler) Register(c *gin.Context) {
 		h.responder.Error(c, err)
 		return
 	}
-	if err := h.validate.Validate(req); err != nil { // Добавьте
+	if err := h.validate.Validate(req); err != nil {
 		h.responder.Error(c, appErrors.NewAppError("VALIDATION", "invalid input", err))
 		return
 	}
@@ -53,7 +53,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		h.responder.Error(c, err)
 		return
 	}
-	if err := h.validate.Validate(req); err != nil { // Добавьте
+	if err := h.validate.Validate(req); err != nil {
 		h.responder.Error(c, appErrors.NewAppError("VALIDATION", "invalid input", err))
 		return
 	}
@@ -79,7 +79,7 @@ func (h *AuthHandler) UpdateAuth(c *gin.Context) {
 	}
 
 	userID := c.GetString("userID")
-	refreshToken := req.RefreshToken // ✅
+	refreshToken := req.RefreshToken
 
 	if refreshToken == "" {
 		h.responder.Error(c, appErrors.NewAppError("VALIDATION", "missing refresh token", nil))
@@ -105,7 +105,7 @@ func (h *AuthHandler) UpdateProfile(c *gin.Context) {
 			h.responder.Error(c, err)
 			return
 		}
-		if err := h.validate.Validate(req); err != nil { // Добавьте
+		if err := h.validate.Validate(req); err != nil {
 			h.responder.Error(c, appErrors.NewAppError("VALIDATION", "invalid input", err))
 			return
 		}
@@ -120,7 +120,7 @@ func (h *AuthHandler) UpdateProfile(c *gin.Context) {
 			h.responder.Error(c, err)
 			return
 		}
-		if err := h.validate.Validate(req); err != nil { // Добавьте
+		if err := h.validate.Validate(req); err != nil {
 			h.responder.Error(c, appErrors.NewAppError("VALIDATION", "invalid input", err))
 			return
 		}
